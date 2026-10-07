@@ -3,6 +3,7 @@ import { orderReducer, subtotal, total } from './order'
 import type { Product } from './order'
 import Payment from './Payment'
 import type { Receipt } from './checkout'
+import TransactionResult from './TransactionResult'
 import './App.css'
 
 type Screen = 'item-selection' | 'order-summary' | 'payment-method'
@@ -27,6 +28,12 @@ function App() {
   const heading = useRef<HTMLHeadingElement>(null)
 
   useEffect(() => { heading.current?.focus() }, [screen])
+
+  function newTransaction() {
+    dispatch({ type: 'reset' })
+    setReceipt(null)
+    setScreen('item-selection')
+  }
 
   useEffect(() => {
     const controller = new AbortController()
@@ -131,11 +138,9 @@ function App() {
             onBack={() => setScreen('order-summary')}
             onProcessing={(processing) => setScreen(processing ? 'payment-processing' : 'payment-method')}
             onSuccess={(paidReceipt) => { setReceipt(paidReceipt); setScreen('payment-successful') }} />}
-          {screen === 'payment-successful' && receipt && <>
-            <h2>Transaction Reference</h2>
-            <p>{receipt.reference}</p>
-          </>}
-          {screen === 'receipt' && <p>No receipt to display yet.</p>}
+          {(screen === 'payment-successful' || screen === 'receipt') && receipt && <TransactionResult
+            receipt={receipt} showReceipt={screen === 'receipt'}
+            onViewReceipt={() => setScreen('receipt')} onNewTransaction={newTransaction} />}
         </section>
       )}
     </main>
