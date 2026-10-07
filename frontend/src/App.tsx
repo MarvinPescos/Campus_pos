@@ -1,6 +1,7 @@
 import { useEffect, useReducer, useRef, useState } from 'react'
 import { orderReducer, subtotal, total } from './order'
 import type { Product } from './order'
+import Payment from './Payment'
 import './App.css'
 
 type Screen = 'item-selection' | 'order-summary' | 'payment-method'
@@ -123,12 +124,13 @@ function App() {
         </section>
       ) : (
         <section className="screen-panel" aria-label={screenTitles[screen]}>
-          {screen === 'payment-method' && <>
-            <p>Payment options are not available yet.</p>
-            <p className="total"><span>Total</span><strong>₱{total(order)}</strong></p>
-            <button type="button" onClick={() => setScreen('order-summary')}>Back</button>
+          {screen === 'payment-method' && <Payment total={total(order)}
+            onBack={() => setScreen('order-summary')}
+            onConfirm={() => setScreen('payment-processing')} />}
+          {screen === 'payment-processing' && <>
+            <p>Payment processing is not available yet.</p>
+            <div className="screen-actions"><button type="button" onClick={() => setScreen('payment-method')}>Back</button></div>
           </>}
-          {screen === 'payment-processing' && <p>Payment processing is not available yet.</p>}
           {screen === 'payment-successful' && <p>No completed payment to display yet.</p>}
           {screen === 'receipt' && <p>No receipt to display yet.</p>}
         </section>
