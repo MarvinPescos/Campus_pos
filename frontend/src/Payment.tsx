@@ -98,7 +98,7 @@ export default function Payment({ order, processing, onBack, onProcessing, onSuc
       </div>
     </> : <>
       {method === 'QR' && <div className="qr-placeholder" role="img" aria-label={`Simulated QR payment for ₱${total}`}>
-        <span aria-hidden="true">▦</span><p>QR placeholder — ₱{total}</p>
+        <img src="/qr-placeholder.png" alt="" /><p>QR placeholder — ₱{total}</p>
       </div>}
       <div className="screen-actions">
         <button type="button" onClick={back}>Back</button>
