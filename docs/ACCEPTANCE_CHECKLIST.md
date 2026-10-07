@@ -1,0 +1,28 @@
+# Acceptance Checklist
+
+- [ ] Application runs
+- [ ] Touchscreen-oriented UI
+- [ ] Large product cards
+- [ ] At least 6 products
+- [ ] Prices displayed
+- [ ] Products selectable
+- [ ] Quantity increase
+- [ ] Quantity decrease
+- [ ] Remove item
+- [ ] Correct subtotal
+- [ ] Correct total
+- [ ] Order Summary
+- [ ] Back preserves order
+- [ ] 3 payment methods
+- [ ] Cash works
+- [ ] Insufficient cash rejected
+- [ ] Correct change
+- [ ] QR simulation
+- [ ] Card simulation
+- [ ] Payment Successful screen
+- [ ] Unique transaction reference
+- [ ] View Receipt
+- [ ] Correct receipt details
+- [ ] Correct receipt payment method
+- [ ] New Transaction reset
+- [ ] Meaningful feedback
