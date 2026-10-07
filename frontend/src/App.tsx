@@ -1,121 +1,94 @@
-import { useState } from 'react'
-import heroImg from './assets/hero.png'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
+import { useEffect, useReducer, useState } from 'react'
+import { orderReducer, subtotal, total } from './order'
+import type { Product } from './order'
 import './App.css'
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [order, dispatch] = useReducer(orderReducer, [])
+  const [products, setProducts] = useState<Product[] | null>(null)
+  const [error, setError] = useState('')
+  const [attempt, setAttempt] = useState(0)
+
+  useEffect(() => {
+    const controller = new AbortController()
+    async function loadProducts() {
+      try {
+        const response = await fetch('/api/products', { signal: controller.signal })
+        if (!response.ok) throw new Error('Unable to load products. Please try again.')
+        const data: unknown = await response.json()
+        if (!Array.isArray(data) || data.length === 0 || !data.every(
+          (product) => product && typeof product.id === 'string' && product.id.length > 0
+            && typeof product.name === 'string' && product.name.length > 0
+            && typeof product.icon === 'string' && Number.isSafeInteger(product.price)
+            && product.price > 0,
+        ) || new Set(data.map((product) => product.id)).size !== data.length) {
+          throw new Error('The product list is unavailable. Please try again.')
+        }
+        if (!controller.signal.aborted) setProducts(data)
+      } catch (cause) {
+        if (!controller.signal.aborted) {
+          setError(cause instanceof Error ? cause.message : 'Unable to load products. Please try again.')
+        }
+      }
+    }
+    void loadProducts()
+    return () => controller.abort()
+  }, [attempt])
 
   return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
-        </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.tsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
-        <button
-          type="button"
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
-      </section>
-
-      <div className="ticks"></div>
-
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
+    <main>
+      <header className="store-header">
+        <p>IT415 Café</p>
+        <h1>Item Selection</h1>
+      </header>
+      <div className="selection-layout">
+        <section aria-labelledby="products-heading">
+          <h2 id="products-heading">Choose your items</h2>
+          {!products && !error && <p role="status">Loading products…</p>}
+          {error && <div role="alert">
+            <p>{error}</p>
+            <button type="button" onClick={() => { setError(''); setAttempt(attempt + 1) }}>Try Again</button>
+          </div>}
+          <div className="products">
+            {products?.map((product) => (
+              <button className="product-card" type="button" key={product.id}
+                onClick={() => dispatch({ type: 'add', product })}>
+                <span className="product-icon" aria-hidden="true">{product.icon}</span>
+                <strong>{product.name}</strong>
+                <span>₱{product.price}</span>
+              </button>
+            ))}
+          </div>
+        </section>
+        <section className="order-panel" aria-labelledby="order-heading">
+          <h2 id="order-heading">Order</h2>
+          {order.length === 0 && <p>No items yet — tap a product</p>}
+          <ul className="order-lines">
+            {order.map((line) => (
+              <li key={line.product.id}>
+                <h3>{line.product.name}</h3>
+                <p>{line.quantity} × ₱{line.product.price} = ₱{subtotal(line)}</p>
+                <div className="quantity-controls">
+                  <button type="button" aria-label={`Decrease ${line.product.name}`}
+                    disabled={line.quantity === 1}
+                    onClick={() => dispatch({ type: 'decrement', productId: line.product.id })}>−</button>
+                  <span aria-label={`Quantity ${line.quantity}`}>{line.quantity}</span>
+                  <button type="button" aria-label={`Increase ${line.product.name}`}
+                    disabled={line.quantity === 99}
+                    onClick={() => dispatch({ type: 'increment', productId: line.product.id })}>+</button>
+                  <button type="button" className="remove"
+                    aria-label={`Remove ${line.product.name}`}
+                    onClick={() => dispatch({ type: 'remove', productId: line.product.id })}>Remove</button>
+                </div>
+                {line.quantity === 99 && <p className="quantity-note">Maximum quantity: 99</p>}
+              </li>
+            ))}
           </ul>
-        </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
-
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
+          <p className="total" aria-live="polite"><span>Total</span><strong>₱{total(order)}</strong></p>
+          <button className="primary proceed" type="button" disabled={order.length === 0}>Proceed</button>
+        </section>
+      </div>
+    </main>
   )
 }
 
