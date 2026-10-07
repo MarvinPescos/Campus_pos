@@ -1,16 +1,25 @@
 import { useEffect, useRef, useState } from 'react'
+import { total as orderTotal } from './order'
+import type { Order } from './order'
+import { checkout } from './checkout'
+import type { Receipt } from './checkout'
 import './Payment.css'
 
 type PaymentMethod = 'Cash' | 'QR' | 'Card'
 
-export default function Payment({ total, onBack, onConfirm }: {
-  total: number
+export default function Payment({ order, processing, onBack, onProcessing, onSuccess }: {
+  order: Order
+  processing: boolean
   onBack: () => void
-  onConfirm: (cashTendered: number) => void
+  onProcessing: (processing: boolean) => void
+  onSuccess: (receipt: Receipt) => void
 }) {
   const [method, setMethod] = useState<PaymentMethod | null>(null)
   const [cash, setCash] = useState('')
+  const [error, setError] = useState('')
+  const busy = useRef(false)
   const heading = useRef<HTMLHeadingElement>(null)
+  const total = orderTotal(order)
   const cashTendered = Number(cash)
   const canConfirm = total > 0 && cashTendered >= total
   const keys = ['1', '2', '3', '4', '5', '6', '7', '8', '9', 'Clear', '0', '00', 'Backspace']
@@ -18,13 +27,44 @@ export default function Payment({ total, onBack, onConfirm }: {
   useEffect(() => { heading.current?.focus() }, [method])
 
   function back() {
+    setError('')
     setCash('')
     setMethod(null)
   }
 
+  async function submit() {
+    if (busy.current || method === null || (method === 'Cash' && !canConfirm)) return
+    busy.current = true
+    setError('')
+    onProcessing(true)
+    try {
+      const paymentMethod = ({ Cash: 'cash', QR: 'qr', Card: 'card' } as const)[method]
+      if (paymentMethod !== 'cash') await new Promise((resolve) => setTimeout(resolve, 1500))
+      onSuccess(await checkout(order, paymentMethod, cashTendered))
+    } catch (cause) {
+      setError(cause instanceof TypeError ? 'Unable to reach the payment service. Please try again.'
+        : cause instanceof Error ? cause.message : 'Payment failed. Please try again.')
+      onProcessing(false)
+    } finally {
+      busy.current = false
+    }
+  }
+
+  if (processing) return <>
+    <h2>{method} payment</h2>
+    <p className="total"><span>Total</span><strong>₱{total}</strong></p>
+    <p role="status">Processing…</p>
+    <div className="screen-actions"><button type="button" disabled>Back</button></div>
+  </>
+
   return <>
     <h2 ref={heading} tabIndex={-1}>{method === 'Cash' ? 'Cash entry' : method ? `${method} payment` : 'Choose a Payment Method'}</h2>
     <p className="total"><span>Total</span><strong>₱{total}</strong></p>
+    {error && <div role="alert">
+      <p>{error}</p>
+      <button type="button" disabled={method === 'Cash' && !canConfirm}
+        onClick={() => void submit()}>Try Again</button>
+    </div>}
     {method === null ? <>
       <div className="payment-methods">
         {(['Cash', 'QR', 'Card'] as const).map((choice) => (
@@ -54,11 +94,18 @@ export default function Payment({ total, onBack, onConfirm }: {
       <div className="screen-actions">
         <button type="button" onClick={back}>Back</button>
         <button type="button" className="primary" disabled={!canConfirm}
-          onClick={() => { if (canConfirm) onConfirm(cashTendered) }}>Confirm</button>
+          onClick={() => void submit()}>Confirm</button>
       </div>
     </> : <>
-      <p role="status">{method} payment simulation is not available yet.</p>
-      <div className="screen-actions"><button type="button" onClick={back}>Back</button></div>
+      {method === 'QR' && <div className="qr-placeholder" role="img" aria-label={`Simulated QR payment for ₱${total}`}>
+        <span aria-hidden="true">▦</span><p>QR placeholder — ₱{total}</p>
+      </div>}
+      <div className="screen-actions">
+        <button type="button" onClick={back}>Back</button>
+        <button type="button" className="primary" onClick={() => void submit()}>
+          {method === 'QR' ? 'Simulate Customer Paid' : 'Tap / Insert Card'}
+        </button>
+      </div>
     </>}
   </>
 }
