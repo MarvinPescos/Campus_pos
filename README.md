@@ -4,6 +4,17 @@ A touchscreen point-of-sale app for "IT415 Café": a React + TypeScript frontend
 
 Start the backend and frontend in separate terminals from the repository root.
 
+## Product Catalog API
+
+### `GET /api/products`
+
+Returns the six products available in the POS catalog. Each product includes:
+
+- `id` — unique product identifier
+- `name` — product name
+- `price` — price in Philippine pesos
+- `icon` — emoji used by the POS interface
+
 ## Running the backend
 
 Requires [uv](https://docs.astral.sh/uv/).
