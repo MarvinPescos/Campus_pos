@@ -1,0 +1,7 @@
+.payment-methods { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--spacing); }
+.payment-methods button { min-height: 120px; font-size: 24px; font-weight: 600; }
+.cash-keypad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; max-width: 480px; margin: auto; }
+.cash-keypad button { font-size: 24px; }
+.cash-backspace { grid-column: 1 / -1; }
+.cash-feedback { font-size: 24px; font-weight: 600; margin-bottom: 12px; }
+.cash-note { margin-bottom: var(--spacing); overflow-wrap: anywhere; }
