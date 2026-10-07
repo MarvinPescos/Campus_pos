@@ -1,13 +1,29 @@
-import { useEffect, useReducer, useState } from 'react'
+import { useEffect, useReducer, useRef, useState } from 'react'
 import { orderReducer, subtotal, total } from './order'
 import type { Product } from './order'
 import './App.css'
 
+type Screen = 'item-selection' | 'order-summary' | 'payment-method'
+  | 'payment-processing' | 'payment-successful' | 'receipt'
+
+const screenTitles: Record<Screen, string> = {
+  'item-selection': 'Item Selection',
+  'order-summary': 'Order Summary',
+  'payment-method': 'Payment Method',
+  'payment-processing': 'Payment Processing',
+  'payment-successful': 'Payment Successful',
+  receipt: 'Receipt',
+}
+
 function App() {
+  const [screen, setScreen] = useState<Screen>('item-selection')
   const [order, dispatch] = useReducer(orderReducer, [])
   const [products, setProducts] = useState<Product[] | null>(null)
   const [error, setError] = useState('')
   const [attempt, setAttempt] = useState(0)
+  const heading = useRef<HTMLHeadingElement>(null)
+
+  useEffect(() => { heading.current?.focus() }, [screen])
 
   useEffect(() => {
     const controller = new AbortController()
@@ -39,9 +55,9 @@ function App() {
     <main>
       <header className="store-header">
         <p>IT415 Café</p>
-        <h1>Item Selection</h1>
+        <h1 ref={heading} tabIndex={-1}>{screenTitles[screen]}</h1>
       </header>
-      <div className="selection-layout">
+      {screen === 'item-selection' ? <div className="selection-layout">
         <section aria-labelledby="products-heading">
           <h2 id="products-heading">Choose your items</h2>
           {!products && !error && <p role="status">Loading products…</p>}
@@ -85,9 +101,38 @@ function App() {
             ))}
           </ul>
           <p className="total" aria-live="polite"><span>Total</span><strong>₱{total(order)}</strong></p>
-          <button className="primary proceed" type="button" disabled={order.length === 0}>Proceed</button>
+          <button className="primary proceed" type="button" disabled={order.length === 0}
+            onClick={() => setScreen('order-summary')}>Proceed</button>
         </section>
-      </div>
+      </div> : screen === 'order-summary' ? (
+        <section className="screen-panel" aria-label="Order Summary">
+          <ul className="order-lines">
+            {order.map((line) => (
+              <li key={line.product.id}>
+                <h2>{line.product.name}</h2>
+                <p>{line.quantity} × ₱{line.product.price} = ₱{subtotal(line)}</p>
+              </li>
+            ))}
+          </ul>
+          <p className="total"><span>Total</span><strong>₱{total(order)}</strong></p>
+          <div className="screen-actions">
+            <button type="button" onClick={() => setScreen('item-selection')}>Back</button>
+            <button type="button" className="primary" disabled={order.length === 0}
+              onClick={() => setScreen('payment-method')}>Proceed</button>
+          </div>
+        </section>
+      ) : (
+        <section className="screen-panel" aria-label={screenTitles[screen]}>
+          {screen === 'payment-method' && <>
+            <p>Payment options are not available yet.</p>
+            <p className="total"><span>Total</span><strong>₱{total(order)}</strong></p>
+            <button type="button" onClick={() => setScreen('order-summary')}>Back</button>
+          </>}
+          {screen === 'payment-processing' && <p>Payment processing is not available yet.</p>}
+          {screen === 'payment-successful' && <p>No completed payment to display yet.</p>}
+          {screen === 'receipt' && <p>No receipt to display yet.</p>}
+        </section>
+      )}
     </main>
   )
 }
