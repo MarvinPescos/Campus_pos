@@ -5,3 +5,5 @@
 .cash-backspace { grid-column: 1 / -1; }
 .cash-feedback { font-size: 24px; font-weight: 600; margin-bottom: 12px; }
 .cash-note { margin-bottom: var(--spacing); overflow-wrap: anywhere; }
+.qr-placeholder { border: 2px dashed var(--border); padding: var(--spacing); text-align: center; }
+.qr-placeholder span { display: block; font-size: 96px; line-height: 1; margin-bottom: 12px; }

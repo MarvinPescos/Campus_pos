@@ -2,6 +2,7 @@ import { useEffect, useReducer, useRef, useState } from 'react'
 import { orderReducer, subtotal, total } from './order'
 import type { Product } from './order'
 import Payment from './Payment'
+import type { Receipt } from './checkout'
 import './App.css'
 
 type Screen = 'item-selection' | 'order-summary' | 'payment-method'
@@ -19,6 +20,7 @@ const screenTitles: Record<Screen, string> = {
 function App() {
   const [screen, setScreen] = useState<Screen>('item-selection')
   const [order, dispatch] = useReducer(orderReducer, [])
+  const [receipt, setReceipt] = useState<Receipt | null>(null)
   const [products, setProducts] = useState<Product[] | null>(null)
   const [error, setError] = useState('')
   const [attempt, setAttempt] = useState(0)
@@ -124,14 +126,15 @@ function App() {
         </section>
       ) : (
         <section className="screen-panel" aria-label={screenTitles[screen]}>
-          {screen === 'payment-method' && <Payment total={total(order)}
+          {(screen === 'payment-method' || screen === 'payment-processing') && <Payment order={order}
+            processing={screen === 'payment-processing'}
             onBack={() => setScreen('order-summary')}
-            onConfirm={() => setScreen('payment-processing')} />}
-          {screen === 'payment-processing' && <>
-            <p>Payment processing is not available yet.</p>
-            <div className="screen-actions"><button type="button" onClick={() => setScreen('payment-method')}>Back</button></div>
+            onProcessing={(processing) => setScreen(processing ? 'payment-processing' : 'payment-method')}
+            onSuccess={(paidReceipt) => { setReceipt(paidReceipt); setScreen('payment-successful') }} />}
+          {screen === 'payment-successful' && receipt && <>
+            <h2>Transaction Reference</h2>
+            <p>{receipt.reference}</p>
           </>}
-          {screen === 'payment-successful' && <p>No completed payment to display yet.</p>}
           {screen === 'receipt' && <p>No receipt to display yet.</p>}
         </section>
       )}

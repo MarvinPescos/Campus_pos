@@ -1,6 +1,7 @@
 // With Vite running: npx --package @playwright/cli playwright-cli open http://127.0.0.1:5179
 // Then: npx --package @playwright/cli playwright-cli run-code --filename scripts/check-payment.js
 async (page) => {
+  await page.unrouteAll({ behavior: 'ignoreErrors' })
   async function cashIs(amount) {
     const displayed = await page.getByLabel('Cash Tendered', { exact: true }).textContent()
     if (displayed !== `₱${amount}`) throw new Error(`Expected cash ₱${amount}, got ${displayed}`)
@@ -10,6 +11,9 @@ async (page) => {
     { id: 'coffee', name: 'Coffee', price: 25, icon: '☕' },
     { id: 'water', name: 'Water', price: 15, icon: '💧' },
   ] }))
+  await page.route('**/api/transactions', (route) => route.fulfill({
+    status: 422, json: { detail: 'Payment rejected for this check.' },
+  }))
   await page.reload()
   await page.getByRole('button', { name: /Coffee ₱25/ }).click()
   await page.getByRole('button', { name: /Coffee ₱25/ }).click()
@@ -75,7 +79,8 @@ async (page) => {
   await key('1').click()
   await key('00').click()
   await key('Confirm').click()
-  await page.getByRole('heading', { name: 'Payment Processing', exact: true }).waitFor()
+  await page.getByRole('alert').getByText('Payment rejected for this check.', { exact: true }).waitFor()
+  await cashIs(100)
   await key('Back').click()
   await key('Cash').click()
   await cashIs(0)
