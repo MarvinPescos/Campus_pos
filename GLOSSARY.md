@@ -5,7 +5,7 @@ A touchscreen point-of-sale system where a cashier builds an Order, takes paymen
 ## Catalog
 
 **Product**:
-An item offered for sale, with a name and a whole-peso price.
+An item offered for sale, with a name, a whole-peso price, and an emoji icon shown on its card.
 _Avoid_: Item, SKU
 
 ## Ordering
