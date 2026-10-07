@@ -1,121 +1,42 @@
 import { useState } from 'react'
-import heroImg from './assets/hero.png'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
+import PaymentMethodScreen from './payment/PaymentMethodScreen'
+import type { PaymentSelection } from './payment/PaymentMethodScreen'
 import './App.css'
 
+// Temporary preview order until the Order flow is integrated.
+const exampleOrder = [
+  { name: 'Brewed Coffee', quantity: 1, price: 90 },
+  { name: 'Café Latte', quantity: 1, price: 120 },
+  { name: 'Iced Tea', quantity: 1, price: 75 },
+]
+const total = exampleOrder.reduce((sum, line) => sum + line.quantity * line.price, 0)
+
 function App() {
-  const [count, setCount] = useState(0)
+  const [screen, setScreen] = useState<'summary' | 'payment'>('payment')
+  const [selection, setSelection] = useState<PaymentSelection | null>(null)
 
   return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
-        </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.tsx</code> and save to test <code>HMR</code>
+    <main>
+      <aside className="preview-note">Payment screen preview · Example Order · Payments are not submitted</aside>
+      {selection ? (
+        <section className="summary-preview">
+          <h1>Payment entry preview</h1>
+          <p role="status">
+            {selection.paymentMethod === 'cash' ? 'Cash Tendered ₱' + selection.cashTendered + ' · Change ₱' + (selection.cashTendered - total) : selection.paymentMethod === 'qr' ? 'QR selected' : 'Card selected'}. No Transaction has been created.
           </p>
-        </div>
-        <button
-          type="button"
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
-      </section>
-
-      <div className="ticks"></div>
-
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
-        </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
-
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
+          <button type="button" className="primary" onClick={() => setSelection(null)}>Return to Payment Method</button>
+        </section>
+      ) : screen === 'summary' ? (
+        <section className="summary-preview" aria-labelledby="summary-heading">
+          <h1 id="summary-heading">Order Summary</h1>
+          <ul>{exampleOrder.map((line) => <li key={line.name}><strong>{line.name}</strong><span>{line.quantity} × ₱{line.price} = ₱{line.quantity * line.price}</span></li>)}</ul>
+          <p className="summary-total">Total: ₱{total}</p>
+          <button type="button" className="primary" onClick={() => setScreen('payment')}>Choose Payment Method</button>
+        </section>
+      ) : (
+        <PaymentMethodScreen total={total} onBack={() => { setSelection(null); setScreen('summary') }} onConfirm={setSelection} />
+      )}
+    </main>
   )
 }
 

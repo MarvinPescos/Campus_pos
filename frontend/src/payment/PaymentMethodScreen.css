@@ -1,0 +1,26 @@
+.payment-screen { max-width: 1100px; margin: 0 auto; padding: 32px; }
+.payment-header { display: flex; align-items: center; justify-content: space-between; gap: 24px; }
+.step-label, .eyebrow { color: var(--muted); font-weight: 600; }
+.payment-title { margin: 36px 0 24px; }
+.payment-title h1 { margin: 8px 0 12px; font-size: 40px; }
+.payment-title p:last-child { color: var(--muted); }
+.amount-due { display: flex; justify-content: space-between; align-items: center; gap: 20px; padding: 24px; background: var(--surface); border: 1px solid var(--border); border-radius: 16px; margin-bottom: 28px; }
+.amount-due strong { font-size: 36px; }
+.payment-methods { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 20px; }
+.method-button { display: flex; flex-direction: column; align-items: flex-start; gap: 14px; background: var(--surface); border: 2px solid var(--border); padding: 28px; border-radius: 16px; min-height: 210px; text-align: left; }
+.method-button:not(:disabled):hover { border-color: var(--accent); }
+.method-button strong { font-size: 28px; }
+.method-button > span:last-child { color: var(--muted); font-size: 16px; }
+.method-icon { font-size: 36px; }
+.cash-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; }
+.cash-details { display: flex; flex-direction: column; align-items: stretch; }
+.cash-details label { font-weight: 600; }
+.cash-amount { font-size: 40px; font-weight: 700; overflow-wrap: anywhere; padding: 16px 0; }
+.cash-feedback { padding: 18px; border-radius: 12px; background: #fff2e6; color: #844000; font-weight: 600; }
+.cash-feedback.sufficient { background: #e4f6ec; color: #17603e; }
+.cash-hint { color: var(--muted); margin: 20px 0; }
+.cash-keypad { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+.cash-keypad button { min-height: 72px; font-size: 24px; }
+.cash-keypad .backspace { grid-column: 1 / -1; font-size: 18px; }
+.payment-choice { display: flex; flex-direction: column; gap: 24px; align-items: flex-start; }
+@media (max-width: 760px) { .payment-screen { padding: 20px; } .payment-methods, .cash-layout { grid-template-columns: 1fr; } .payment-header { flex-wrap: wrap; } }
