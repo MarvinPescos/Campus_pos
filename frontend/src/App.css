@@ -23,6 +23,8 @@ button { min-height: var(--tap-size); min-width: var(--tap-size); border: 1px so
 .proceed { width: 100%; font-weight: 600; }
 .screen-panel { max-width: 800px; margin: auto; }
 .screen-actions { display: flex; justify-content: space-between; gap: var(--spacing); margin-top: 32px; }
+.receipt-details { display: grid; grid-template-columns: auto 1fr; gap: 12px var(--spacing); margin: 0 0 var(--spacing); }
+.receipt-details dd { margin: 0; text-align: right; overflow-wrap: anywhere; }
 @media (max-width: 1000px) {
   .selection-layout { grid-template-columns: 1fr; }
   .products { grid-template-columns: repeat(2, 1fr); }
