@@ -1,29 +1,42 @@
-# IT415 Café POS
+# Campus POS
+
+A touchscreen point-of-sale app for "IT415 Café": a React + TypeScript frontend backed by a FastAPI service.
 
 Start the backend and frontend in separate terminals from the repository root.
 
-Backend:
+## Running the backend
 
-```powershell
+Requires [uv](https://docs.astral.sh/uv/).
+
+```sh
 cd backend
-uv run fastapi dev src/backend/main.py
+uv run fastapi dev
 ```
 
-Frontend:
+The API is served at http://localhost:8000 (product catalog at `GET /api/products`).
 
-```powershell
+## Running the frontend
+
+```sh
 cd frontend
 npm install
 npm run dev
 ```
 
-Open the Vite URL shown in the terminal. The frontend forwards `/api` requests
-to `http://localhost:8000`. The catalog requires the `GET /api/products` endpoint
-from issue #2; the current health-check-only backend cannot load products yet.
+Open the Vite URL shown in the terminal. The frontend forwards `/api` requests to `http://localhost:8000`.
 
-Frontend checks:
+## Testing
 
-```powershell
+Backend:
+
+```sh
+cd backend
+uv run pytest
+```
+
+Frontend:
+
+```sh
 cd frontend
 npm test
 npm run typecheck

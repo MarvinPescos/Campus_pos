@@ -1,8 +1,15 @@
 from fastapi import FastAPI
 
-app = FastAPI(title="IT415 POS API")
+from backend.catalog import PRODUCTS, Product
+
+app = FastAPI(title="Campus POS API")
 
 
-@app.get("/health")
-def health_check():
+@app.get("/api/health")
+def health_check() -> dict[str, str]:
     return {"status": "ok"}
+
+
+@app.get("/api/products")
+def list_products() -> list[Product]:
+    return PRODUCTS
